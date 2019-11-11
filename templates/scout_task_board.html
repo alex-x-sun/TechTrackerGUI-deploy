@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+{% block content %}
+
+{% if tasks %}
+<div>
+    <h5>Current Scout Taskboard</h5>
+    <table id="example" class="table table-responsive-sm" >
+      <thead>
+          <tr>
+
+              <th>Tech Name</th>
+              <th>Task Issued Time</th>
+              <th>Notes</th>
+
+          </tr>
+      </thead>
+      {% for task in tasks %}
+      <tbody>
+          <tr>
+              <td>{{ task['tech_name'] }}</td>
+              <td>{{ task['task_post_time'] }}</td>
+              <td>{{ task['notes'] }}</td>
+          </tr>
+      </tbody>
+      {% endfor %}
+    </table>
+</div>
+{% else %}
+<h6>We need new scout tasks!</h6>
+{% endif %}
+
+<hr></hr>
+
+<div class="content-section">
+  <form method="POST" action="">
+      {{ form.hidden_tag() }}
+      {{ form.csrf_token }}
+
+      <div class="form-group">
+              <b>{{ form.tech_name.label(class="form-control-label") }}</b>
+              <p><small><font color="grey">Add a new technology to scout.</font></small></p>
+              {% if form.tech_name.errors %}
+                  {{ form.tech_name(class="form-control form-control-lg is-invalid") }}
+                  <div class="invalid-feedback">
+                      {% for error in form.tech_name.errors %}
+                          <span>{{ error }}</span>
+                      {% endfor %}
+                  </div>
+              {% else %}
+                  {{ form.tech_name(class="form-control form-control-lg") }}
+              {% endif %}
+      </div>
+
+      <div class="form-group">
+              <b>{{ form.notes.label(class="form-control-label") }}</b>
+              <p><small><font color="grey">Notes on this technology</font></small></p>
+              {% if form.notes.errors %}
+                  {{ form.notes(class="form-control form-control-lg is-invalid") }}
+                  <div class="invalid-feedback">
+                      {% for error in form.notes.errors %}
+                          <span>{{ error }}</span>
+                      {% endfor %}
+                  </div>
+              {% else %}
+                  {{ form.notes(class="form-control form-control-lg") }}
+              {% endif %}
+      </div>
+      <div class="form-group">
+          {{ form.submit(class="btn btn-outline-info") }}
+      </div>
+
+
+  </form>
+</div>
+
+
+{% endblock content %}

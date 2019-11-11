@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+{% block content %}
+
+
+
+
+    <div div class="cw-100">
+
+      <div class = "row">
+        <div class = "col">
+          <h5>You are editing a tech story of: {{ story['name']}} </h5>
+        </div>
+        <div class = "col">
+          <div class="btn-group btn-group-sm pull-right mt-1" role="group">
+
+            <a href="{{ url_for('view_all_final_stories', tech = story['name']) }}" role="button"  class="btn   btn-outline-info  pull-right">Back to Story Page</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class = "content-section">
+      <div class = "row">
+        <div class = "col">
+            <b>{{ form.story_year.label(class="form-control-label") }}: </b>
+            <p><small><font color="grey">{{ story['story_year']}}</font></small></p>
+        </div>
+        <div class = "col">
+          <a href="{{ url_for('update_entry', table = 'tech_story_final', colname = 'story_year', idcol = 'story_id', row_id = story['story_id'], type = 'Integer') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+        </div>
+      </div>
+    </div>
+
+
+      <div class = "content-section">
+        <div class = "row">
+          <div class = "col">
+            <b>{{ form.story_date.label(class="form-control-label") }}: </b>
+            <p><small><font color="grey">{% if story['exact_time'] %} {{ story['story_time_s']}} {% else %} (No exact date) {% endif %}</font></small></p>
+          </div>
+          <div class = "col">
+            <a href="{{ url_for('update_entry', table = 'tech_story_final', colname = 'story_time', idcol = 'story_id', row_id = story['story_id'], type = 'Date') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+          </div>
+        </div>
+      </div>
+
+
+      <div class = "content-section">
+        <div class = "row">
+          <div class = "col">
+        <b>{{ form.milestone.label(class="form-control-label") }}</b>
+        <p><small><font color="grey">{{ story['milestone']}}</font></small></p>
+      </div>
+      <div class = "col">
+        <a href="{{ url_for('update_entry', table = 'tech_story_final', colname = 'milestone', idcol = 'story_id', row_id = story['story_id'], type = 'Select') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+      </div>
+    </div>
+  </div>
+
+  <div class = "content-section">
+    <div class = "row">
+      <div class = "col">
+        <b>{{ form.story_content.label(class="form-control-label") }}</b>
+        <p><small><font color="grey">{{ story['story_content']}}</font></small></p>
+      </div>
+      <div class = "col">
+        <a href="{{ url_for('update_entry', table = 'tech_story_final', colname = 'story_content', idcol = 'story_id', row_id = story['story_id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+      </div>
+    </div>
+  </div>
+
+  <div class = "content-section">
+    <div class = "row">
+      <div class = "col">
+        <b>{{ form.sources.label(class="form-control-label") }}</b>
+        <p><small><font color="grey">{{ story['sources']}}</font></small></p>
+      </div>
+      <div class = "col">
+        <a href="{{ url_for('update_entry', table = 'tech_story_final', colname = 'sources', idcol = 'story_id', row_id = story['story_id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+{% endblock content %}

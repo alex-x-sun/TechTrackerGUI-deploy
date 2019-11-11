@@ -1,0 +1,25 @@
+{% macro show_links(user) %}
+<ul class="nav navbar-nav">
+
+    {% if not user %}
+    <a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>
+    <a class="nav-item nav-link" href="{{ url_for('register') }}">Register</a>
+    {% endif %}
+
+    {% if user['final_editor'] == 1 %}
+    <li><a class="nav-item nav-link" href="{{ url_for('final_edit_mode') }}">Final Edit Mode</a></li>
+    {% endif %}
+
+
+    {% if user['admin'] == 1 %}
+    <li><a class="nav-item nav-link" href="{{ url_for('admin') }}">Admin</a></li>
+    {% endif %}
+
+
+
+    {% if user %}
+    <li><a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+    {% endif %}
+
+</ul>
+{% endmacro %}

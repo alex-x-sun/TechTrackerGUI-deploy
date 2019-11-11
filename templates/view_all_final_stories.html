@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+
+  <div class="col-sm-2">
+    <!-- <form method="POST" action=""> -->
+    <div class="row" style = "margin-bottom: 15px; margin-top: 15px">
+      <h5><font size="2">Milestone Checklist</font></h5>
+      <dic class="list-group">
+        {% for ms in milestones[1:] %}
+          <h9 class="list-group-item py-1.5 px-2  {% if ms in ms_left %} list-group-item-action {% else %} list-group-item-success {% endif %}"><font size="1">{{ ms }}</font></h9>
+        {% endfor %}
+
+
+    </div>
+  </div>
+
+
+  <div class="col-sm-10">
+  <div div class="table table-responsive-sm">
+
+
+      <h5>Current Progress</h5>
+      <table id="example" class="table table-hover" >
+        <thead>
+            <tr>
+
+                <th>Year</th>
+                <th>Story Content</th>
+                <th>Milestone</th>
+                <th>Sources</th>
+                <th> <a href = "#" role="button"  class="btn btn-outline-secondary disabled">Add a story</a> </th>
+
+
+            </tr>
+        </thead>
+        {% for story in stories %}
+        <tbody>
+
+
+            <tr class=" table-light ">
+
+
+                <td>{{ story['story_year'] }}</td>
+                <td style="word-wrap: break-word; min-width: 480px;">{{ story['story_content'] }}</td>
+                <td>{{ story['milestone'] }}</td>
+                <td style="word-wrap: break-word; max-width: 200px;">{{ story['sources'] }}</td>
+                <td>
+                  <a href = "{{ url_for('edit_final_log', story_id= story['story_id'], mode = 'edit') }}" role="button"  class="btn btn-outline-info ">View & Edit</a>
+                </td>
+            </tr>
+        </tbody>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+
+
+</div>
+
+{% endblock content %}

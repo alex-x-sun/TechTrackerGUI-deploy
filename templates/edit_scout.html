@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+{% block content %}
+
+
+
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+
+  <div div class="col-lg-12">
+        <h5>You are editing the tech scout of: {{ scout['tech_name']}} </h5>
+          <p><small><font color="grey">Latest scout/edit by {{ scout['username'] }} at {{ scout['scout_time_dt'] }}</font></small></p>
+
+
+          <div class = "content-section">
+            <div class = "row">
+              <div class = "col">
+                  <b>Associate Names: </b>
+                  <p><small><font color="grey">{{ scout['asso_names'] }}</font></small></p>
+              </div>
+              <div class = "col">
+                <a href="{{ url_for('update_entry', table = 'tech_main_log', colname = 'asso_names', idcol = 'log_id', row_id = scout['log_id'], type = 'Textlist') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+              </div>
+            </div>
+          </div>
+
+          <div class = "content-section">
+            <div class = "row">
+              <div class = "col">
+                  <b>Wikipedia Link: </b>
+                  <p><small><font color="grey">{{ scout['wiki_link'] }}</font></small></p>
+              </div>
+              <div class = "col">
+                <a href="{{ url_for('update_entry', table = 'tech_main_log', colname = 'wiki_link', idcol = 'log_id', row_id = scout['log_id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+              </div>
+            </div>
+          </div>
+
+
+
+          <div class = "content-section">
+            <div class = "row">
+              <div class = "col">
+                  <b>Category: </b>
+                  <p><small><font color="grey">{{ scout['category'] }}</font></small></p>
+              </div>
+              <div class = "col">
+                <a href="{{ url_for('update_entry', table = 'tech_main_log', colname = 'category', idcol = 'log_id', row_id = scout['log_id'], type = 'Category') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+              </div>
+            </div>
+          </div>
+
+
+          <div class = "content-section">
+            <div class = "row">
+              <div class = "col">
+                  <b>Description: </b>
+                  <p><small><font color="grey">{{ scout['description'] }}</font></small></p>
+              </div>
+              <div class = "col">
+                <a href="{{ url_for('update_entry', table = 'tech_main_log', colname = 'description', idcol = 'log_id', row_id = scout['log_id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+              </div>
+            </div>
+          </div>
+
+          <div class = "content-section">
+            <div class = "row">
+              <div class = "col">
+                  <b>Embedded Technology: </b>
+                  <p><small><font color="grey">{{ scout['emb_techs'] }}</font></small></p>
+              </div>
+              <div class = "col">
+                <a href="{{ url_for('update_entry', table = 'tech_main_log', colname = 'emb_techs', idcol = 'log_id', row_id = scout['log_id'], type = 'Textlist') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+              </div>
+            </div>
+          </div>
+
+          <div class = "content-section">
+            <div class = "row">
+              <div class = "col">
+                  <b>Built Environment Impact: </b>
+                  <p><small><font color="grey">{{ scout['impact'] }}</font></small></p>
+              </div>
+              <div class = "col">
+                <a href="{{ url_for('update_entry', table = 'tech_main_log', colname = 'impact', idcol = 'log_id', row_id = scout['log_id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+              </div>
+            </div>
+          </div>
+
+
+          <div class = "content-section">
+            <div class = "row">
+              <div class = "col">
+                  <b>Sources: </b>
+                  <p><small><font color="grey">{{ scout['sources'] }}</font></small></p>
+              </div>
+              <div class = "col">
+                <a href="{{ url_for('update_entry', table = 'tech_main_log', colname = 'sources', idcol = 'log_id', row_id = scout['log_s_id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+              </div>
+            </div>
+          </div>
+
+  </div>
+</form>
+{% endblock content %}

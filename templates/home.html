@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+
+{% block content %}
+<!-- <h1>Tech</h1> -->
+
+<div class="row" style = "margin-bottom: 15px; margin-top: 15px">
+
+	<div class="col-sm-4">
+		 <a class="list-group-item" href="{{ url_for('tech_scout') }}">Tech Scout</a>
+	</div>
+
+	<div class="col-sm-4">
+		 <a class="list-group-item" href="{{ url_for('task_board_a') }}">Tech Analytics</a>
+	</div>
+
+	<div class="col-sm-4">
+		 <a class="list-group-item" href="{{ url_for('task_board_e') }}">Tech Edit</a>
+	</div>
+</div>
+<!-- <div>
+	<img src= '/static/pics/WhatsApp Image 2019-10-26 at 14.36.50.jpeg' class = "img-responsive">
+</div> -->
+
+<hr></hr>
+{% if tasks %}
+<div>
+    <h5>Current Scout Taskboard</h5>
+		<p></p>
+    <table id="example" class="table table-responsive-sm" >
+      <thead>
+          <tr>
+
+              <th>Tech Name</th>
+              <th>Task Issued Time</th>
+              <th>Notes</th>
+
+          </tr>
+      </thead>
+      {% for task in tasks %}
+      <tbody>
+          <tr>
+              <td>{{ task['tech_name'] }}</td>
+              <td>{{ task['task_post_time'] }}</td>
+              <td>{% if task['notes'] %} {{ task['notes'] }} {% else %} {% endif %}</td>
+          </tr>
+      </tbody>
+      {% endfor %}
+    </table>
+</div>
+{% else %}
+<h6>We need new scout tasks!</h6>
+{% endif %}
+
+{% endblock content %}

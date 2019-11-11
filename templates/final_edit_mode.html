@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+{% block content %}
+
+
+<div class="col">
+
+   <a class="list-group-item list-group-item-action" href="{{ url_for('scout_task_board') }}">
+     <h5 class="list-group-item-heading"> Scout Task Board </h5>
+     <p><small><font color="grey"> Add new technologies to the general scout task board. </font></small></p>
+   </a>
+
+   <a class="list-group-item list-group-item-action" href="{{ url_for('tech_overview') }}">
+     <h5 class="list-group-item-heading"> Tech Overview </h5>
+     <p><small><font color="grey"> Check and edit all information about a technology in the final tables </font></small></p>
+   </a>
+
+   <!-- <a class="list-group-item list-group-item-action" href="{{ url_for('final_check_edit') }}">
+     <h5 class="list-group-item-heading">  </h5>
+     <p><small><font color="grey"> Updating final tables with data from tech editors </font></small></p>
+    </a> -->
+
+</div>
+
+
+
+
+{% endblock content %}

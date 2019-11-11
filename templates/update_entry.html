@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+{% block content %}
+
+<div class = "content-section">
+<h6>You are editing the variable: <strong>{% if variable_name %} {{ variable_name }} {% else %} {{ colname }} {% endif %}</strong></h6>
+<p><small><font color="grey">in the table: {{ table }}</font></small></p>
+
+ <small><font color="grey"> Current Value: {{ current_value }} </small>
+
+  <hr></hr>
+
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    {% if type == 'Text' %}
+      <b>{{ form.update_text.label(class="form-control-label") }}: </b>
+      {% if form.update_text.errors %}
+        {{ form.update_text(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+          {% for error in form.update_text.errors %}
+                <span>{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        {{ form.update_text(class="form-control form-control-lg") }}
+      {% endif %}
+
+    {% elif type == 'Integer' %}
+      <b>{{ form.update_integer.label(class="form-control-label") }}: </b>
+      {% if form.update_integer.errors %}
+        {{ form.update_integer(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+          {% for error in form.update_integer.errors %}
+                <span>{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        {{ form.update_integer(class="form-control form-control-lg") }}
+      {% endif %}
+
+    {% elif type == 'Date' %}
+      <b>{{ form.update_date.label(class="form-control-label") }}: </b>
+      <p><small><font color="grey">Please insert the exact date (strictly) in YYYY-MM-DD format. If you are not sure about the EXACT date, leave this field blank and go back to the previous page.</font></small></p>
+      {% if form.update_date.errors %}
+        {{ form.update_date(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+          {% for error in form.update_date.errors %}
+                <span>{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        {{ form.update_date(class="form-control form-control-lg") }}
+      {% endif %}
+
+    {% elif type == 'Select' %}
+      <b>{{ form.update_select.label(class="form-control-label") }}: </b>
+      {% if form.update_select.errors %}
+        {{ form.update_select(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+          {% for error in update_select.errors %}
+                <span>{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        {{ form.update_select(class="form-control form-control-lg") }}
+      {% endif %}
+
+    {% elif type == 'Textlist' %}
+      <b>{{ form.update_textlist.label(class="form-control-label") }}: </b>
+      {% if form.update_textlist.errors %}
+        {{ form.update_textlist(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+          {% for error in update_textlist.errors %}
+                <span>{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        {{ form.update_textlist(class="form-control form-control-lg") }}
+      {% endif %}
+
+    {% elif type == 'Category' %}
+      <b>{{ form.update_category.label(class="form-control-label") }}: </b>
+      {% if form.update_category.errors %}
+        {{ form.update_category(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+          {% for error in update_category.errors %}
+                <span>{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        {{ form.update_category(class="form-control form-control-lg") }}
+      {% endif %}
+
+    {% endif %}
+
+<hr></hr>
+    <div class="form-group">
+      {{ form.submit(class="btn btn-outline-info") }}
+    </div>
+
+</form>
+
+</div>
+
+{% endblock content %}

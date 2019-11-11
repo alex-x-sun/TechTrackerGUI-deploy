@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+{% block content %}
+
+
+
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+
+  <div div class="col-lg-12">
+    <div class = "row">
+      <div class = "col">
+        <h5>You are editing the tech scout of: {{ scout['name'] }} </h5>
+
+
+
+                        <div class = "content-section">
+                          <div class = "row">
+                            <div class = "col">
+                                <b>{{ form.tech_name.label(class="form-control-label") }}: </b>
+                                <p><small><font color="grey">{{ scout['name'] }}</font></small></p>
+                            </div>
+                            <div class = "col">
+                              <a href="{{ url_for('update_entry', table = 'tech_main_final', colname = 'name', idcol = 'id', row_id = scout['id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class = "content-section">
+                          <div class = "row">
+                            <div class = "col">
+                                <b>{{ form.associate_names.label(class="form-control-label") }}: </b>
+                                <p><small><font color="grey">{{ scout['associate_names'] }}</font></small></p>
+                            </div>
+                            <div class = "col">
+                              <a href="{{ url_for('update_entry', table = 'tech_main_final', colname = 'associate_names', idcol = 'id', row_id = scout['id'], type = 'Textlist') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class = "content-section">
+                          <div class = "row">
+                            <div class = "col">
+                                <b>{{ form.wikilink.label(class="form-control-label") }}: </b>
+                                <p><small><font color="grey">{{ scout['wiki_link'] }}</font></small></p>
+                            </div>
+                            <div class = "col">
+                              <a href="{{ url_for('update_entry', table = 'tech_wiki_final', colname = 'wiki_link', idcol = 'tech_id', row_id = scout['id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+                            </div>
+                          </div>
+                        </div>
+
+
+
+                        <div class = "content-section">
+                          <div class = "row">
+                            <div class = "col">
+                                <b>{{ form.category.label(class="form-control-label") }}: </b>
+                                <p><small><font color="grey">{{ scout['category'] }}</font></small></p>
+                            </div>
+                            <div class = "col">
+                              <a href="{{ url_for('update_entry', table = 'tech_main_final', colname = 'category', idcol = 'id', row_id = scout['id'], type = 'Category') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+                            </div>
+                          </div>
+                        </div>
+
+
+                        <div class = "content-section">
+                          <div class = "row">
+                            <div class = "col">
+                                <b>{{ form.description.label(class="form-control-label") }}: </b>
+                                <p><small><font color="grey">{{ scout['description'] }}</font></small></p>
+                            </div>
+                            <div class = "col">
+                              <a href="{{ url_for('update_entry', table = 'tech_main_final', colname = 'description', idcol = 'id', row_id = scout['id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class = "content-section">
+                          <div class = "row">
+                            <div class = "col">
+                                <b>{{ form.embed_tech.label(class="form-control-label") }}: </b>
+                                <p><small><font color="grey">{{ scout['embedded_technology'] }}</font></small></p>
+                            </div>
+                            <div class = "col">
+                              <a href="{{ url_for('update_entry', table = 'tech_main_final', colname = 'embedded_technology', idcol = 'id', row_id = scout['id'], type = 'Textlist') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class = "content-section">
+                          <div class = "row">
+                            <div class = "col">
+                                <b>{{ form.impact.label(class="form-control-label") }}: </b>
+                                <p><small><font color="grey">{{ scout['impact'] }}</font></small></p>
+                            </div>
+                            <div class = "col">
+                              <a href="{{ url_for('update_entry', table = 'tech_main_final', colname = 'impact', idcol = 'id', row_id = scout['id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+                            </div>
+                          </div>
+                        </div>
+
+
+                        <!-- <div>
+                            <p><b>Impact Sectors*</b></p>
+                            <hr></hr>
+                            {% for sec in selected_sec  %}
+
+                              <p><small><font color="grey">{{ sec['sector'] }}</font></small></p>
+                            {% endfor %}
+                            <hr></hr>
+                            {% for s in sectors %}
+                              <p><small><input type="checkbox" value="{{ s['sec_id'] }}" name="mycheckbox">  {{ s['sector'] }}  </small></p>
+                            {% endfor %}
+                            <br></br>
+                        </div> -->
+
+
+                        <div class = "content-section">
+                          <div class = "row">
+                            <div class = "col">
+                                <b>{{ form.sources.label(class="form-control-label") }}: </b>
+                                <p><small><font color="grey">{{ scout['sources'] }}</font></small></p>
+                            </div>
+                            <div class = "col">
+                              <a href="{{ url_for('update_entry', table = 'tech_main_final', colname = 'sources', idcol = 'id', row_id = scout['id'], type = 'Text') }}" role="button"  class="btn-outline-info pull-right mt-1">Edit</a>
+                            </div>
+                          </div>
+                        </div>
+
+
+                    </div>
+
+
+</form>
+{% endblock content %}
