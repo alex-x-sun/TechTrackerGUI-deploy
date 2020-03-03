@@ -37,6 +37,9 @@ milestones_tuplist = [('none', 'None Milestone Story')] + [(ms, text_pretty(ms))
 
 
 
+
+
+
 # milestones = list(map(text_pretty, milestones_0))
 # milestones
 milestones = ['None',\

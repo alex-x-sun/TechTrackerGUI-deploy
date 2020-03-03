@@ -10,17 +10,22 @@
 <div class="w-100">
   <div class = "row">
     <div class = "col">
-      <h5>You are viewing: {{ scout['tech_name']}} </h5>
+      <h6>You are viewing:</h6>
+      <h5> {{ scout['tech_name']}} </h5>
       <p><small><font color="grey">Latest scout/edit by {{ scout['username'] }} at {{ scout['scout_time_dt'] }}</font></small></p>
     </div>
     <div class = "col">
       <div class="btn-group btn-group-sm pull-right mt-1" role="group">
         {% if mode == 'edit' %}
-          <a href="{{ url_for('commit_scout', log_id = scout['log_id']) }}" role="button"  class="btn {% if user['can_edit'] == 0 or scout['change_committed'] %}  btn-outline-secondary disabled {% else %} btn-outline-info {% endif %} ">Confirm & Commit</a>
+          <a href="{{ url_for('commit_scout', log_id = scout['log_id']) }}" role="button"  class="btn {% if user['can_edit'] == 0 or scout['change_committed'] %}  btn-outline-secondary disabled {% else %} btn-outline-info {% endif %} "><small>Confirm & Commit</small></a>
+          <a href="{{ url_for('view_all_stories', tech = scout['tech_name']) }}" role="button"  class="btn   btn-outline-info  pull-right"><small>Edit Stories</small></a>
+          <a href="{{ url_for('task_board_e') }}" role="button"  class="btn   btn-outline-info  pull-right"><small>Back to the Taskboard</small></a>
+
         {% else %}
-          <a href="{{ url_for('tech_analytics', tech=scout['tech_name']) }}" role="button"  class="btn btn-outline-info ">Analysis & Add Stories</a>
+          <a href="{{ url_for('tech_analytics', tech=scout['tech_name']) }}" role="button"  class="btn btn-outline-info "><small>Analysis & Add Stories</small></a>
+          <a href="{{ url_for('task_board_a') }}" role="button"  class="btn   btn-outline-info  pull-right"><small>Back to the Taskboard</small></a>
         {% endif %}
-        <a href="{{ url_for('task_board_a') }}" role="button"  class="btn   btn-outline-info  pull-right">Back to the Taskboard</a>
+
       </div>
     </div>
   </div>

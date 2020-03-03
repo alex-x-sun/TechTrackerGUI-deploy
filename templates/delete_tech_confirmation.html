@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+{% from "show_links.html" import show_links %}
+
+{% block nav %}
+{{ show_links(user) }}
+{% endblock %}
+
+{% block content %}
+
+
+
+
+    <div div class="cw-100">
+
+      <div class = "row">
+        <div class = "col">
+          <h5>You are deleting the technology: {{ tech['tech_name']}} </h5>
+        </div>
+        <div class = "col">
+          <div class="btn-group btn-group-sm pull-right mt-1" role="group">
+
+            <a href="{{ url_for('task_board_e')}}" role="button"  class="btn   btn-outline-info  pull-right">Back to Edit Page</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class = "content-section">
+
+      <div class = "row">
+        <div class = "col">
+
+            <h6>Contributor:</h6>
+            <p><small><font color="grey">{{ contributor_name }}</font></small></p>
+          </div>
+
+            <div class = "col">
+              <h6>Contribute Time:</h6>
+              <p><small><font color="grey">{{ tech['scout_time'] }}</font></small></p>
+            </div>
+          </div>
+
+    <div class = "row">
+      <div class = "col">
+        <h6>Tech Description:</h6>
+        <p><small><font color="grey">{{ tech['description']}}</font></small></p>
+      </div>
+
+    </div>
+
+    <div class = "row">
+      <div class = "col">
+        <h6>Built Environment Impact:</h6>
+        <p><small><font color="grey">{{ tech['impact']}}</font></small></p>
+      </div>
+
+    </div>
+
+    <div class = "row">
+      <div class = "col">
+        <h6>Embedded Technologies:</h6>
+        <p><small><font color="grey">{{ tech['emb_techs']}}</font></small></p>
+      </div>
+
+    </div>
+
+
+
+    <div class = "row">
+      <div class = "col">
+        <h6>Associate Names:</h6>
+        <p><small><font color="grey">{{ tech['asso_names']}}</font></small></p>
+      </div>
+
+    </div>
+
+
+
+    <div class = "row">
+      <div class = "col">
+        <h6>Source:</h6>
+        <p><small><font color="grey">{{ tech['desc_source']}}</font></small></p>
+      </div>
+
+    </div>
+  </div>
+<hr></hr>
+
+
+  <form method="POST" action="">
+      {{ form.hidden_tag() }}
+      {{ form.csrf_token }}
+
+{% if num_story == 0 %}
+<h5>Stories related to this technology: 0</h5>
+
+<hr></hr>
+
+<div class="form-group">
+        <b>Please type the following text in the blank to confirm delete:</b>
+        <p><small><font color="grey">{{ tech['tech_name']}}</font></small></p>
+        {% if form.confirm_text.errors %}
+            {{ form.confirm_text(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+                {% for error in form.confirm_text.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% else %}
+            {{ form.confirm_text(class="form-control form-control-lg") }}
+        {% endif %}
+
+</div>
+
+  <div class="form-group">
+      {{ form.confirm(class="btn btn-danger") }}
+  </div>
+{% else %}
+
+<div class = "row">
+  <div class = "col">
+    <h5>Stories related to this technology: {{ num_story }}</h5>
+  </div>
+  <div class = "col">
+    <div class="btn-group btn-group-sm pull-right mt-1" role="group">
+
+      <a href="{{ url_for('view_all_stories', tech = tech['tech_name'])}}" role="button"  class="btn   btn-outline-info  pull-right">Check Stories</a>
+    </div>
+  </div>
+</div>
+
+
+<div div class="table table-responsive-sm">
+
+
+
+      <p><small><font color="grey">You have to either delete all stories or assign the stories to other technologies.</font></small></p>
+      <table id="example" class="table table-hover" >
+        <thead>
+            <tr>
+
+                <th>Year</th>
+                <th>Story Content</th>
+                <th>Milestone</th>
+                <th>Contributor</th>
+                <th>Submit Time</th>
+
+
+            </tr>
+        </thead>
+        {% for story in stories %}
+        <tbody>
+
+
+            <tr class="{% if story['change_committed']  %} table-success {% else %} table-light {% endif %}">
+
+
+                <td>{{ story['story_year'] }}</td>
+                <td>{{ story['story_content'] }}</td>
+                <td>{{ story['milestone'] }}</td>
+                <td>{{ story['contributor_name'] }}</td>
+                <td>{{ story['contribute_time'] }}</td>
+
+                <!-- <td>
+                  <a href = "{{ url_for('edit_log', log_s_id= story['log_s_id']) }}" role="button"  class="btn {% if story['contributor_id'] == user['user_id'] or user['can_edit'] == 1 %} btn-outline-info {% else %} btn-outline-secondary disabled {% endif %}">Edit</a>
+                </td> -->
+            </tr>
+        </tbody>
+        {% endfor %}
+
+      </table>
+</div>
+<div class="form-group">
+    {{ form.confirm(class="btn btn-secondary disabled") }}
+</div>
+{% endif %}
+
+</form>
+
+
+{% endblock content %}

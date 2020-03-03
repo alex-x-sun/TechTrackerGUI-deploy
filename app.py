@@ -143,15 +143,20 @@ def tech_scout():
             if repeat_scout_checker(form):
                 flash(f'Scout field: The Technology {form.tech_name.data} already exists. Please check.', 'danger')
             else:
-                db.execute('''
-                            insert into tech_main_log
-                                (contributor, tech_name, scout_time, description, impact, desc_source, asso_names, impa_sector, emb_techs, wiki_link, category)
-                            values
-                                (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            ''', (user['user_id'], form.tech_name.data, datetime.now(), form.description.data, form.impact.data, form.sources.data, form.associate_names.data, ';'.join(checkbox), form.embed_tech.data, form.wikilink.data, form.category.data))
+                try:
+                    tech_name = text_pretty(form.tech_name.data)
+                    asso_names = textlist_pretty(form.associate_names.data)
+                    emb_techs = textlist_pretty(form.embed_tech.data)
 
-                # we might need some cleaner functions here
+                    db.execute('''
+                                insert into tech_main_log
+                                    (contributor, tech_name, scout_time, description, impact, desc_source, asso_names, impa_sector, emb_techs, wiki_link, category)
+                                values
+                                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                ''', (user['user_id'], tech_name, datetime.now(), form.description.data, form.impact.data, form.sources.data, asso_names, ';'.join(checkbox), emb_techs, form.wikilink.data, form.category.data))
 
+                except:
+                    flash(f'Please double check the format of input data', 'danger')
 
                 try:
                     db.execute('''
@@ -215,6 +220,17 @@ def tech_analytics(tech):
     # get all finished milestones
 
     db = get_db()
+
+######################## use session data instead ################################
+    db.execute('''
+                select max(log_id) log_id
+                from tech_main_log
+                where tech_name = %s
+                group by tech_name
+                ''',(tech,))
+    log_id = db.fetchone()
+
+##################################################################################
     db.execute('''
                             select
                                 log_s_id,
@@ -222,7 +238,8 @@ def tech_analytics(tech):
                                 substr(tsl.story_content, 1, 100)|| '...' story_content, story_year,
                                 contributor contributor_id,
                                 username contributor_name,
-                                to_char(contribute_time,'MON-DD-YYYY HH12:MIPM') contribute_time
+                                to_char(contribute_time,'MON-DD-YYYY HH12:MIPM') contribute_time,
+                                change_committed
                             from tech_story_log tsl left join users u on contributor = user_id
                                 left join milestones on milestone = ma_std_name
                             where tsl.tech_name = %s
@@ -280,7 +297,7 @@ def tech_analytics(tech):
                 flash(f'New story added', 'success')
                 return redirect(url_for('tech_analytics',tech=tech))
 
-    return render_template('tech_analytics.html', title='Technology Analytics', form=form, user= user,  milestones = milestones, ms_left = ms_left_l, stories = stories_results, tech=tech)
+    return render_template('tech_analytics.html', title='Technology Analytics', form=form, user= user,  milestones = milestones, ms_left = ms_left_l, stories = stories_results, tech=tech, log_id = log_id)
 
 @app.route("/task_board_e", methods = ['GET', 'POST'])
 def task_board_e():
@@ -315,7 +332,7 @@ def task_board_e():
 
                                 on tml.tech_name = tsl.tech_name
 
-                            order by lower(tml.tech_name) asc
+                            order by story_count asc NULLS FIRST
                          ''')
 
     task_result = db.fetchall()
@@ -488,22 +505,12 @@ def edit_scout(log_id):
             flash(form.errors if len(form.errors)!= 0 else 'Select Impact Sectors', 'danger')
 
     return render_template('edit_scout.html', title='Edit Tech Scout', form = form, user = user, scout = scout, sectors = all_sectors, selected_sec = current_sectors )
-#################################################################################
 
-@app.route("/delete_log/<table>/<idcol>/<id>", methods = ['GET', 'POST'])
-def delete_log(table, idcol, id):
-
-    db = get_db()
-    sql = 'delete from '+str(table)+' where '+ str(idcol) + '= %s'
-    db.execute(sql,(id,))
-
-    return redirect(url_for('task_board_e'))
-#################################################################################
 
 @app.route("/commit_scout/<log_id>", methods = ['GET', 'POST'])
 def commit_scout(log_id):
     """
-    For editor users, commit a tech story to main table.
+    For editor users, commit a tech to main table.
     """
     user = get_current_user()
     db = get_db()
@@ -516,66 +523,80 @@ def commit_scout(log_id):
     db.execute('select * from tech_main_log where log_id = %s',(log_id,))
     log = db.fetchone()
 
-    is_use = True if log['category'] == 'use' else False
-    is_prod = True if log['category']  == 'product' else False
-    is_proc = True if log['category']  == 'process' else False
+    is_use = True if log['category'] == 'Use' else False
+    is_prod = True if log['category']  == 'Product' else False
+    is_proc = True if log['category']  == 'Process' else False
+
+    machine_name = ToMachineReadable(log['tech_name'])
 
     ########### commit changes to main tables ######################
-    db.execute('select * from tech_main where name = %s',(log['tech_name'],))
+    db.execute('select * from tech_main_final where name = %s',(log['tech_name'],))
     tech_main_result = db.fetchone()
 
     if tech_main_result:
         db.execute('''
-                    update tech_main
+                    update tech_main_final
                     set name = %s,
                         description = %s,
                         impact = %s,
                         impa_sector = %s,
                         is_use = %s,
                         is_prod = %s,
-                        is_proc = %s
-                   ''',(log['tech_name'], log['description'], log['impact'], log['impa_sector'], is_use, is_prod, is_proc))
+                        is_proc = %s,
+                        sources = %s,
+                        associate_names = %s,
+                        embedded_technology = %s,
+                        category = %s,
+                        machine_name = %s
+
+                   ''',(log['tech_name'], log['description'], log['impact'], log['impa_sector'], is_use, is_prod, is_proc, log['desc_source'], log['asso_names'], log['emb_techs'], log['category'], machine_name))
 
 
         ########### commit to other related tables #####################
         # embedded techs
-        db.execute('''
-                    update tech_embed
-                    set embed_li = %s
-                    where id = %s
-                    ''', (log['emb_techs'], tech_main_result['id']))
+        # db.execute('''
+        #             update tech_embed
+        #             set embed_li = %s
+        #             where id = %s
+        #             ''', (log['emb_techs'], tech_main_result['id']))
 
 
     else: # if this is a new tech
         db.execute('''
-                    insert into tech_main
-                        (name, description, impact, impa_sector, is_use, is_prod, is_proc)
+                    insert into tech_main_final
+                        (name, description, impact, impa_sector, is_use, is_prod, is_proc, sources, associate_names, embedded_technology, category, machine_name)
                     values
-                        (%s, %s, %s, %s, %s, %s, %s)
-                    ''', (log['tech_name'], log['description'], log['impact'], log['impa_sector'], is_use, is_prod, is_proc))
+                        (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (log['tech_name'], log['description'], log['impact'], log['impa_sector'], is_use, is_prod, is_proc, log['desc_source'], log['asso_names'], log['emb_techs'], log['category'], machine_name))
 
+        db.execute('''
+                    insert into tech_wiki_final
+                        (tech_id, wiki_link)
+                    values
+                        (%s, %s)
+                    ''', (log_id, log['wiki_link']))
 
-        db.execute('select * from tech_main where name = %s',(log['tech_name'],))
+        db.execute('select * from tech_main_final where name = %s',(log['tech_name'],))
         tech_main_result = db.fetchone()
 
         ########### commit to other related tables #####################
         # embedded techs
-        db.execute('''
-                    insert into tech_embed
-                        (id, embed_li)
-                    values
-                        (%s, %s)
-                    ''', (tech_main_result['id'], log['emb_techs']))
+        # db.execute('''
+        #             insert into tech_embed
+        #                 (id, embed_li)
+        #             values
+        #                 (%s, %s)
+        #             ''', (tech_main_result['id'], log['emb_techs']))
 
 
     # associate names to the lookup table
-    for name in list(map(lambda x:x.strip(), log['asso_names'].split(';'))):
-        db.execute('''
-                    insert into tech_lookup
-                        (tech_main_id, tech_lookup_name)
-                    values
-                        (%s, %s)
-                    ''', (tech_main_result['id'], name))
+    # for name in list(map(lambda x:x.strip(), log['asso_names'].split(';'))):
+    #     db.execute('''
+    #                 insert into tech_lookup
+    #                     (tech_main_id, tech_lookup_name)
+    #                 values
+    #                     (%s, %s)
+    #                 ''', (tech_main_result['id'], name))
 
 
     ########### change the commit status #############################
@@ -589,7 +610,7 @@ def commit_scout(log_id):
 
 
     flash('Congrats! New technology scout committed to the main database.', 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('task_board_e'))
 
 
 
@@ -602,6 +623,14 @@ def view_all_stories(tech):
     if user['can_edit'] == 0:
         flash('No access. Please contact administrators', 'danger')
         return redirect(url_for('home'))
+
+    db.execute('''
+                select max(log_id) log_id
+                from tech_main_log
+                where tech_name = %s
+                group by tech_name
+                ''',(tech,))
+    log_id = db.fetchone()
 
     db.execute('''
                     select
@@ -620,7 +649,7 @@ def view_all_stories(tech):
                     ''', (tech,))
     stories_results = db.fetchall()
 
-    return render_template('view_all_stories.html', title='View Progress',  user = user, stories = stories_results, tech=tech)
+    return render_template('view_all_stories.html', title='View Progress',  user = user, stories = stories_results, tech=tech, log_id = log_id)
 
 
 
@@ -643,7 +672,7 @@ def commit_story(log_s_id):
 
     # check if tech exists
     db.execute('''
-                            select * from tech_main
+                            select * from tech_main_final
                             where name = %s
                           ''',(log['tech_name'],) )
     tech = db.fetchone()
@@ -655,13 +684,14 @@ def commit_story(log_s_id):
     tech_id = tech['id']
 
     # check if the milestone exists
+    milestone = text_pretty(log['milestone'])
     db.execute('''
-                              select * from tech_story
+                              select * from tech_story_final
                               where name = %s
                               and story_content = %s
                               and milestone = %s
                               and story_year = %s
-                           ''', (log['tech_name'], log['story_content'] ,  log['milestone'], log['story_year']))
+                           ''', (log['tech_name'], log['story_content'] , milestone , log['story_year']))
     existing_story = db.fetchone()
 
     if existing_story:
@@ -671,19 +701,25 @@ def commit_story(log_s_id):
 
 
     ########### prepare the variables #############################
-    if log['story_date']:
-        story_time = (datetime.strptime(str(log['story_year']) + '/' + log['story_date'], '%Y/%m/%d'))
-        exact_time = 1
-    else:
-        story_time = random_date(log['story_year'])
+    try:
+        if log['story_date']:
+
+            story_time = (datetime.strptime(str(log['story_year']) + '/' + log['story_date'], '%Y/%m/%d'))
+            exact_time = 1
+
+        else:
+            story_time = random_date(log['story_year'])
+            exact_time = 0
+    except:
+        story_time = random_date(1000)
         exact_time = 0
 
     db.execute('''
-                  insert into tech_story
+                  insert into tech_story_final
                     (id, name, story_time, story_content, milestone, exact_time, source_check, sources, story_year)
                   values
                     (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-               ''',(tech_id, log['tech_name'], story_time, log['story_content'], log['milestone'], exact_time, 1, log['sources'], log['story_year'] ) )
+               ''',(tech_id, log['tech_name'], story_time, log['story_content'], milestone, exact_time, 1, log['sources'], log['story_year'] ) )
 
 
     ########### commit to other related tables #####################
@@ -819,6 +855,7 @@ def edit_final_scout(id):
                             where id = %s
                             ''', (id,))
     scout = db.fetchone()
+
     if scout['is_prod']:
         category = 'Product'
     elif scout['is_proc']:
@@ -827,45 +864,13 @@ def edit_final_scout(id):
         category = 'Use'
     else:
         category = None
-    # b = tuple(map(int, scout['impa_sector'].split(';'))) if len(scout['impa_sector']) >1 else '('+str(scout['impa_sector']) + ')'
 
-    # sectors_sql = 'select sector from impacted_sector_order where sec_id in ' + str(b)
-
-    # db.execute(sectors_sql)
-    # current_sectors = db.fetchall()
 
     db.execute('select sec_id, sector from impacted_sector_order')
     all_sectors = db.fetchall()
 
     ##########################################################################
     form = TechScoutForm()
-
-    # if request.method == 'POST':
-    #     trigger = True
-    #     checkbox = request.form.getlist('mycheckbox')
-    #
-    #     if len(checkbox) ==0:
-    #         trigger = False #
-
-        # if form.validate_on_submit():
-        #
-        #     if repeat_scout_checker(form, mode = 'full_check'):
-        #         flash(f'Edit field: please do not submit repeated content', 'danger')
-        #     else:
-        #         # commit changes
-        #         db.execute('''
-        #                     update tech_main_log
-        #                     set contributor = %s, tech_name = %s, scout_time = %s, description = %s, impact = %s, desc_source = %s, asso_names = %s, impa_sector = %s, emb_techs = %s, wiki_link = %s, category = %s
-        #                     where log_id = %s
-        #
-        #                     ''', (user['user_id'], form.tech_name.data, datetime.now(), form.description.data, form.impact.data, form.sources.data, form.associate_names.data, ';'.join(checkbox), form.embed_tech.data, form.wikilink.data, form.category.data, log_id))
-        #
-        #         # we might need some cleaner functions here
-        #
-        #         flash(f'Tech Scout Updated', 'success')
-        #         return redirect(url_for('view_scout',log_id=log_id))
-        # else:
-        #     flash(form.errors if len(form.errors)!= 0 else 'Select Impact Sectors', 'danger')
 
     return render_template('edit_final_scout.html', title='Edit Tech Scout', form = form, user = user, scout = scout, sectors = all_sectors, category = category )
 
@@ -878,6 +883,15 @@ def view_all_final_stories(tech):
     if user['final_editor'] == 0:
         flash('You are not a final editor', 'danger')
         return redirect(url_for('home'))
+
+    db.execute('''
+                select max(id) id
+                from tech_main_final
+                where name = %s
+                group by name
+                ''',(tech,))
+    id = db.fetchone()
+    tech_id = id['id']
 
     db.execute('''
                             select m.ms_name ms_name, m.milestone_id ms_id
@@ -910,8 +924,172 @@ def view_all_final_stories(tech):
                     ''', (tech,))
 
     stories_results = db.fetchall()
+#################################################################################
 
-    return render_template('view_all_final_stories.html', title='View Progress',  user = user, stories = stories_results, tech=tech, milestones = milestones, ms_left = ms_left_l )
+
+    form = TechAnalyticsForm()
+    form.milestone.choices = milestones_tuplist
+
+    if request.method == 'POST':
+
+        if form.validate_on_submit():
+            # check repeat form
+
+
+            if repeat_final_story(form):
+                flash('You have already submitted this story', 'danger')
+            else:
+                if form.story_date.data:
+                    story_time = (datetime.strptime(str(form.story_year.data) + '/' + form.story_date.data, '%Y/%m/%d'))
+                    exact_time = 1
+                else:
+                    story_time = random_date(form.story_year.data)
+                    exact_time = 0
+
+                # commit changes
+
+                db.execute('''
+                              insert into tech_story_final
+                                (id, name, story_time, story_content, milestone, exact_time, source_check, sources, story_year)
+                              values
+                                (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                           ''',(tech_id, tech, story_time, form.story_content.data, form.milestone.data, exact_time, 1, form.sources.data, form.story_year.data ) )
+
+                flash(f'New story added', 'success')
+                return redirect(url_for('view_all_final_stories',tech=tech))
+
+
+
+    return render_template('view_all_final_stories.html', title='View Progress', form = form, user = user, stories = stories_results, tech=tech, tech_id = tech_id, milestones = milestones, ms_left = ms_left_l)
+
+#################################################################################
+
+@app.route("/delete_tech/<table>/<idcol>/<id>", methods = ['GET', 'POST'])
+def delete_tech(table, idcol, id):
+
+    user = get_current_user()
+
+
+    db = get_db()
+    db.execute('select * from '+str(table)+' where '+ str(idcol) + '= %s', (id,))
+    # can also be a tech
+    tech = db.fetchone()
+    author_id = tech['contributor']
+    try:
+        db.execute('select username from users where user_id = %s', (tech['contributor'],))
+        contributor_name = db.fetchone()['username']
+    except:
+        contributor_name = 'Unknown'
+
+    if (user['can_edit'] == 0) and (user['user_id'] != tech['contributor']):
+        flash('You cannot edit this story', 'danger')
+        return redirect(url_for('task_board_e'))
+
+    db.execute('''
+                    select
+                        log_s_id,
+                        ms_name milestone,
+                        substr(tsl.story_content, 1, 100)|| '...' story_content, story_year,
+                        contributor contributor_id,
+                        username contributor_name,
+                        to_char(contribute_time,'MON-DD-YYYY HH12:MIPM') contribute_time,
+                        change_committed
+                    from tech_story_log tsl join users u on contributor = user_id
+                        left join milestones on milestone = ma_std_name
+                    where tsl.tech_name = %s
+                    order by story_year, milestone_id asc
+
+                    ''', (tech['tech_name'],))
+    stories_results = db.fetchall()
+
+    form = ConfirmationForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+
+            try:
+
+                sql = 'delete from '+str(table)+' where '+ str(idcol) + '= %s'
+                db.execute(sql,(id,))
+                flash('The entry has been successfully deleted','success')
+                return redirect(url_for('task_board_e'))
+            except:
+                flash('This entry cannot be deleted','danger')
+
+
+    return render_template('delete_tech_confirmation.html', form =form, user = user, tech = tech, contributor_name = contributor_name, stories = stories_results, num_story = len(stories_results))
+
+#################################################################################
+
+@app.route("/delete_log/<table>/<idcol>/<id>", methods = ['GET', 'POST'])
+def delete_log(table, idcol, id):
+
+    user = get_current_user()
+
+
+    db = get_db()
+    db.execute('select * from '+str(table)+' where '+ str(idcol) + '= %s', (id,))
+    # can also be a tech
+    story = db.fetchone()
+    author_id = story['contributor']
+    try:
+        db.execute('select username from users where user_id = %s', (story['contributor'],))
+        contributor_name = db.fetchone()['username']
+    except:
+        contributor_name = 'Unknown'
+
+    if (user['can_edit'] == 0) and (user['user_id'] != story['contributor']):
+        flash('You cannot edit this story', 'danger')
+        return redirect(url_for('task_board_e'))
+
+    form = ConfirmationForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+
+            try:
+
+                sql = 'delete from '+str(table)+' where '+ str(idcol) + '= %s'
+                db.execute(sql,(id,))
+                flash('The entry has been successfully deleted','success')
+
+                return redirect(url_for('view_all_stories',tech = story['tech_name']))
+
+            except:
+                flash('This entry cannot be deleted','danger')
+
+
+    return render_template('delete_log_confirmation.html', form =form, user = user, story = story, tech = story['tech_name'], contributor_name = contributor_name)
+
+
+#################################################################################
+
+@app.route("/delete_final_log/<tech>/<table>/<idcol>/<id>", methods = ['GET', 'POST'])
+def delete_final_log(tech, table, idcol, id):
+    # flash('This delete will be irreversible. Please check the content carefully before you confirm','danger')
+    user = get_current_user()
+    if user['final_editor'] == 0:
+        flash('You have no access to this content', 'danger')
+        return redirect(url_for('view_all_final_stories', tech = tech))
+
+    db = get_db()
+    db.execute('select * from '+str(table)+' where '+ str(idcol) + '= %s', (id,))
+    story = db.fetchone()
+
+    form = ConfirmationForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+
+            try:
+
+                sql = 'delete from '+str(table)+' where '+ str(idcol) + '= %s'
+                db.execute(sql,(id,))
+                flash('The story has been successfully deleted','success')
+                return redirect(url_for('view_all_final_stories',tech = tech))
+            except:
+                flash('This story cannot be deleted','danger')
+
+
+
+    return render_template('delete_confirmation.html', form =form, user = user, story = story, tech = tech)
 
 @app.route("/edit_final_log/<story_id>", methods = ['GET', 'POST'])
 def edit_final_log(story_id):
@@ -964,7 +1142,7 @@ def edit_final_log(story_id):
     #         except:
     #             flash(f'Something is wrong. Check imput format', 'danger')
 
-    return render_template('edit_final_log.html', title='View Tech Story', form = form, user = user, story = story)
+    return render_template('edit_final_log.html', title='View Tech Story',story = story, form = form, user = user)
 
 
 
@@ -978,9 +1156,9 @@ def update_entry(table, colname, idcol, row_id, type, mode = None, variable_name
     user = get_current_user()
     if not user:
         return redirect(url_for('login'))
-    if user['final_editor'] == 0:
-        flash('You are not a final editor', 'danger')
-        return redirect(url_for('home'))
+    # if user['can_edit'] == 0:
+    #     flash('Please contact us for full access', 'danger')
+    #     return redirect(url_for('home'))
 
     db = get_db()
     form = UpdateOneForm()
@@ -994,9 +1172,8 @@ def update_entry(table, colname, idcol, row_id, type, mode = None, variable_name
     except:
         current_value = None
 
-
     if type == 'Select':
-        form.update_select.choices = choices
+        form.update_select.choices = milestones_tuplist
 
     if request.method == 'POST':
         if form.is_submitted():
@@ -1007,34 +1184,35 @@ def update_entry(table, colname, idcol, row_id, type, mode = None, variable_name
             elif type == 'Date' and form.update_date.validate(form):
                 update_data = form.update_date.data
             elif type == 'Select' and form.update_select.validate(form):
-                update_data = form.update_select.data
+                if table == 'tech_story_final':
+                    update_data = text_pretty(form.update_select.data)
+                else:
+                    update_data = form.update_select.data
             elif type == 'Textlist' and form.update_textlist.validate(form):
                 update_data = form.update_textlist.data
             elif type == 'Category' and form.update_category.validate(form):
                 update_data = form.update_category.data
 
             else:
-                flash('Form validation error.', 'danger')
+                flash('Format error. No change committed', 'danger')
                 return redirect(redirect_marker(table, row_id, mode=mode))
 
             try:
-                # flash(str(update_data),'success')
+
                 sql = 'update ' + str(table) + ' set ' + str(colname) + '= %s  where ' + str(idcol) + ' = %s'
                 db.execute(sql ,(update_data, row_id))
 
-                if type == 'Date':
+                if (type == 'Date') and (table != 'tech_story_log'):
                     sql = 'update '+ str(table) + ' set exact_time = 1 where ' +  str(idcol) + ' = %s'
-                    db.execute(sql ,(row_id))
+                    db.execute(sql ,(row_id,))
 
                 flash('Selcted cell updated!', 'success')
                 return redirect(redirect_marker(table, row_id, mode=mode))
-
             except:
-                flash('Data format error.', 'danger')
-
+                flash('Failed redirect or database writing', 'danger')
 
         else:
-            flash('Form submit error.', 'danger')
+            flash('Form submit error', 'danger')
 
     elif request.method =="GET":
 
@@ -1044,57 +1222,59 @@ def update_entry(table, colname, idcol, row_id, type, mode = None, variable_name
             except:
                 continue
 
+
+
     return render_template('update_entry.html', form = form, user = user, type = type, colname = colname, table = table, current_value = current_value, variable_name=variable_name, mode=mode)
 
 
-@app.route('/add_story_final', methods = ['GET', 'POST'])
-def add_story_final(tech):
-    """
-    Add a story directly into the final table
-    """
-    user = get_current_user()
-    if not user:
-        return redirect(url_for('login'))
-    if user['final_editor'] == 0:
-        flash('You are not a final editor', 'danger')
-        return redirect(url_for('home'))
-
-
-    form = TechAnalyticsForm()
-    form.milestone.choices = milestones_tuplist
-
-    if request.method == 'POST':
-
-        if form.validate_on_submit():
-            # check repeat form ?
-            # current entry cursor
-            db.execute('''
-                        select * from tech_main
-                        where name = %s
-                        ''',(tech,))
-            tech_main_result = db.fetchone()
-
-            id = tech_main_result['id']
-
-            if log['story_date']:
-                story_time = (datetime.strptime(str(log['story_year']) + '/' + log['story_date'], '%Y/%m/%d'))
-                exact_time = 1
-            else:
-                story_time = random_date(log['story_year'])
-                exact_time = 0
-
-
-            # commit changes
-            db.execute('''insert into tech_story_final
-                            (id, name, story_time, story_content, milestone, exact_time, sources, story_year )
-                          values (%s, %s, %s, %s, %s, %s, %s, %s)''', (id, tech, story_time, form.story_content.data, form.milestone.data, exact_time, form.sources.data, form.story_year.data))
-
-            # we might need some cleaner functions here
-
-            flash(f'New story added', 'success')
-            return redirect(url_for('tech_analytics',tech=tech))
-
-    return render_template('add_story_final.html', title='Technology Analytics', form=form, user= user,  stories = stories_results, tech=tech)
+# @app.route('/add_story_final', methods = ['GET', 'POST'])
+# def add_story_final(tech):
+#     """
+#     Add a story directly into the final table
+#     """
+#     user = get_current_user()
+#     if not user:
+#         return redirect(url_for('login'))
+#     if user['final_editor'] == 0:
+#         flash('You are not a final editor', 'danger')
+#         return redirect(url_for('home'))
+#
+#
+#     form = TechAnalyticsForm()
+#     form.milestone.choices = milestones_tuplist
+#
+#     if request.method == 'POST':
+#
+#         if form.validate_on_submit():
+#             # check repeat form ?
+#             # current entry cursor
+#             db.execute('''
+#                         select * from tech_main
+#                         where name = %s
+#                         ''',(tech,))
+#             tech_main_result = db.fetchone()
+#
+#             id = tech_main_result['id']
+#
+#             if log['story_date']:
+#                 story_time = (datetime.strptime(str(log['story_year']) + '/' + log['story_date'], '%Y/%m/%d'))
+#                 exact_time = 1
+#             else:
+#                 story_time = random_date(log['story_year'])
+#                 exact_time = 0
+#
+#
+#             # commit changes
+#             db.execute('''insert into tech_story_final
+#                             (id, name, story_time, story_content, milestone, exact_time, sources, story_year )
+#                           values (%s, %s, %s, %s, %s, %s, %s, %s)''', (id, tech, story_time, form.story_content.data, form.milestone.data, exact_time, form.sources.data, form.story_year.data))
+#
+#             # we might need some cleaner functions here
+#
+#             flash(f'New story added', 'success')
+#             return redirect(url_for('tech_analytics',tech=tech))
+#
+#     return render_template('add_story_final.html', title='Technology Analytics', form=form, user= user,  stories = stories_results, tech=tech)
 
 
 @app.route('/final_check_edit', methods = ['GET', 'POST'])
@@ -1116,6 +1296,25 @@ def final_check_edit():
 
     return '<h1> Still developing </h1>'
 
+@app.route("/source_check/<tech>/<story_id>", methods = ['GET', 'POST'])
+def source_check(story_id, tech):
+
+    user = get_current_user()
+    if user['final_editor'] == 0:
+        flash('You are not a final editor', 'danger')
+        return redirect(url_for('home'))
+
+    db = get_db()
+    sql = '''
+            update tech_story_final
+                set source_check = case
+                when source_check = 1 then 0
+                else 1 end
+                where story_id = %s
+          '''
+    db.execute(sql,(story_id,))
+
+    return redirect(url_for('view_all_final_stories',tech = tech))
 
 
 if __name__ == '__main__':

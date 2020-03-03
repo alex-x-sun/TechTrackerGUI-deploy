@@ -15,6 +15,7 @@ def random_date(year):
     return start + timedelta(seconds=random_second)
 
 
+
 def redirect_marker(table, row_id, mode = None):
     if table == 'tech_story_final':
         return (url_for('edit_final_log', story_id = row_id))
@@ -30,3 +31,26 @@ def redirect_marker(table, row_id, mode = None):
             return (url_for('view_log', log_s_id = row_id, mode = 'edit'))
         else:
             return (url_for('view_log', log_s_id = row_id))
+
+def text_pretty(varchar):
+    return varchar.replace('_', ' ').strip().title()
+
+def textlist_pretty(varchar):
+    return '; '.join(list(map(text_pretty, varchar.split(';'))))
+
+def ToMachineReadable(char):
+    """
+    Change a string into standard format
+    """
+    try:
+        return char.lower().strip().replace(' ', '_')
+    except:
+        return None
+
+
+
+
+
+
+
+#

@@ -7,6 +7,9 @@
 
 {% block content %}
 
+
+
+
 <div class = "content-section">
 <h6>You are editing the variable: <strong>{% if variable_name %} {{ variable_name }} {% else %} {{ colname }} {% endif %}</strong></h6>
 <p><small><font color="grey">in the table: {{ table }}</font></small></p>
@@ -20,6 +23,7 @@
     {{ form.csrf_token }}
     {% if type == 'Text' %}
       <b>{{ form.update_text.label(class="form-control-label") }}: </b>
+      <p><small><font color="grey">If you are editing the exact date of a story, please insert data in MM/DD format.</font></small></p>
       {% if form.update_text.errors %}
         {{ form.update_text(class="form-control form-control-lg is-invalid") }}
         <div class="invalid-feedback">
@@ -100,9 +104,11 @@
     {% endif %}
 
 <hr></hr>
+
     <div class="form-group">
       {{ form.submit(class="btn btn-outline-info") }}
     </div>
+    <!-- <a href="" role="button"  class="btn btn-outline-info ">Back to story page</a> -->
 
 </form>
 

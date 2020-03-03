@@ -24,7 +24,7 @@
   </thead>
   {% for task in tasks %}
   <tbody>
-      <tr class="{% if task['change_committed'] %} table-success {% else %} table-light {% endif %}">
+      <tr class="{% if task['change_committed'] %} table-dark {% else %} table-light {% endif %}">
           <td>{{ task['tech_name'] }}</td>
           <td>{{ task['story_count'] }}</td>
           <td>{{ task['latest_scout'] }}</td>
@@ -43,9 +43,9 @@
           </td>
 
           <td tyle="word-wrap: break-word; min-width: 200px;">
-            {% if user['final_editor'] == 1 %}
-            <a href = "{{ url_for('delete_log', table = 'tech_main_log', idcol = 'log_id', id = task['log_id']) }}" class = "pull-right"><font color = "red" size = "2">DELETE</font></a>
-            {% endif %}
+            
+            <a href = "{{ url_for('delete_tech', table = 'tech_main_log', idcol = 'log_id', id = task['log_id']) }}" class = "btn btn-outline-danger btn-sm pull-right"><font size = "1">DELETE</font></a>
+
           </td>
       </tr>
   </tbody>

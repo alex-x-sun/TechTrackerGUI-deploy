@@ -3,7 +3,7 @@ from flask import g
 import psycopg2
 from psycopg2.extras import DictCursor
 
-uri = 'postgres://swfowakoyqaick:515c847a476c6837c04c297188f40fadfa94e2b947e0a9097e21caa3cc2d27e0@ec2-174-129-253-53.compute-1.amazonaws.com:5432/dc1lbk6bk5of1d'
+uri = 'postgres://ungukuf9o6sbq:pe49dcb2a9fbfde8f38be66632713ee8c5323d58d6d23c910206072f97359a053@ec2-54-159-212-244.compute-1.amazonaws.com:5432/d9jgr7g9240o7k'
 
 def connect_db():
     conn = psycopg2.connect(uri, cursor_factory=DictCursor)

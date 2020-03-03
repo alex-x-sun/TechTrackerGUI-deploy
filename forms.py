@@ -12,9 +12,10 @@ regex_url = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0
 
 regex_multi_url = regex_url # change this
 
-regex_words_semicolumns = r'^([a-zA-Z0-9_\s-]+(;\s|;))*([a-zA-Z0-9_\s-]+)$'
-
+regex_words_semicolumns = r'^([-\w\s\(\)(;\s|;)])*([-\w\s\(\)]+)$'
+# regex_words_semicolumns = None
 regex_date = r'(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])'
+
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username',
@@ -82,12 +83,15 @@ class UpdateOneForm(FlaskForm):
     update_text = TextAreaField()
     update_integer = IntegerField()
     update_date = DateField(validators=[Optional()])
+    update_date_str = TextAreaField(validators=[Optional(), Regexp(regex =r'(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])',message="Please insert data in mm/dd format")])
     update_select = SelectField(choices = milestones_tuplist)
     update_textlist = TextAreaField(validators =[Regexp(regex = regex_words_semicolumns)]) #
     update_category = SelectField(choices = category_tuplist )
     submit = SubmitField('Submit')
 
-
+class ConfirmationForm(FlaskForm):
+    confirm_text = StringField(validators=[DataRequired()])
+    confirm = SubmitField('Confirm Delete')
 
 
 

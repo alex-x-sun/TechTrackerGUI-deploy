@@ -23,13 +23,37 @@ CREATE TABLE tech_main_final (
     impa_sector text,
     sources text,
     associate_names text,
-    embedded_technology text
-
+    embedded_technology text,
+    category text,
+    machine_name text
 );
+
+-- this part is for resetting the serials---------------------------------------
 
 ALTER SEQUENCE tech_main_id_seq RESTART WITH x;
 ALTER SEQUENCE tech_story_final_story_id_seq RESTART;
 
+-- Login to psql and run the following
+
+-- What is the result?
+SELECT MAX(id) FROM your_table;
+
+-- Then run...
+-- This should be higher than the last result.
+SELECT nextval('your_table_id_seq');
+
+-- If it's not higher... run this set the sequence last to your highest id.
+-- (wise to run a quick pg_dump first...)
+
+BEGIN;
+-- protect against concurrent inserts while you update the counter
+LOCK TABLE your_table IN EXCLUSIVE MODE;
+-- Update the sequence
+SELECT setval('your_table_id_seq', COALESCE((SELECT MAX(id)+1 FROM your_table), 1), false);
+COMMIT;
+
+
+---------------------------------------------------------------------------------
 CREATE TABLE tech_lookup (
   lookup_id serial PRIMARY KEY,
   tech_main_id integer REFERENCES tech_main (id) not null,
@@ -88,7 +112,7 @@ CREATE TABLE tech_story (
 
 CREATE TABLE tech_story_final (
     story_id serial PRIMARY KEY,
-    id integer REFERENCES tech_main_final(id) not null,
+    id integer not null,
     name text NOT NULL,
     story_time timestamp without time zone NOT NULL,
     story_content text NOT NULL,
@@ -99,6 +123,12 @@ CREATE TABLE tech_story_final (
     story_year integer NOT NULL
 
 );
+
+-- ALTER TABLE tech_story_final
+-- ADD CONSTRAINT ref_main FOREIGN KEY (id) REFERENCES tech_main_final (id);
+--
+-- ALTER TABLE tech_story_final
+-- DROP CONSTRAINT ref_main;
 
 CREATE TABLE users (
   user_id serial PRIMARY KEY,

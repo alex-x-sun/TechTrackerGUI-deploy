@@ -6,27 +6,47 @@
 {% endblock %}
 
 {% block content %}
+<div class = "row">
+  <div class = "col">
+    <h5>You are checking the stories of: {{ tech }} </h5>
+  </div>
+
+
+  <div class = "col">
+    <div class="btn-group btn-group-sm pull-right mt-1" role="group">
+      <a href="{{ url_for('edit_final_scout', id = tech_id) }}"  target="_blank" role="button"  class="btn   btn-outline-info  pull-right">Check Basic Info</a>
+      <a href="{{ url_for('tech_overview')}}" role="button"  class="btn   btn-outline-info  pull-right">Back to All Techs</a>
+    </div>
+  </div>
+</div>
+
+<hr></hr>
 <div class="row">
 
-  <div class="col-sm-2">
+  <div class="col-sm-3">
+    <div>
     <!-- <form method="POST" action=""> -->
     <div class="row" style = "margin-bottom: 15px; margin-top: 15px">
-      <h5><font size="2">Milestone Checklist</font></h5>
+
       <dic class="list-group">
+        <p><font size="1">Milestone Checklist</font></p>
         {% for ms in milestones[1:] %}
           <h9 class="list-group-item py-1.5 px-2  {% if ms in ms_left %} list-group-item-action {% else %} list-group-item-success {% endif %}"><font size="1">{{ ms }}</font></h9>
         {% endfor %}
 
-
+        </div>
     </div>
   </div>
 
 
-  <div class="col-sm-10">
+  <div class="col-sm-9">
   <div div class="table table-responsive-sm">
 
 
-      <h5>Current Progress</h5>
+
+
+
+    <h6>Current Progress</h6>
       <table id="example" class="table table-hover" >
         <thead>
             <tr>
@@ -35,8 +55,9 @@
                 <th>Story Content</th>
                 <th>Milestone</th>
                 <th>Sources</th>
-                <th> <a href = "#" role="button"  class="btn btn-outline-secondary disabled">Add a story</a> </th>
-
+                <th>Checked</th>
+                <th> <a href = "#add_new_final_story" role="button"  class="btn btn-outline-primary">Add a story</a> </th>
+                <th></th>
 
             </tr>
         </thead>
@@ -48,21 +69,147 @@
 
 
                 <td>{{ story['story_year'] }}</td>
-                <td style="word-wrap: break-word; min-width: 480px;">{{ story['story_content'] }}</td>
+                <td style="word-wrap: break-word; min-width: 480px;"><small>{{ story['story_content'] }}</small></td>
                 <td>{{ story['milestone'] }}</td>
-                <td style="word-wrap: break-word; max-width: 200px;">{{ story['sources'] }}</td>
+                <td style="word-wrap: break-word; max-width: 200px;"><small>{{ story['sources'] }}</small></td>
+                <td>
+                  <a href = "{{ url_for('source_check', tech = tech, story_id= story['story_id'] )}}" role="button"  class="{% if story['source_check'] == 0 %} btn btn-outline-info {% else %} btn btn-info {% endif %}"></a>
+                </td>
                 <td>
                   <a href = "{{ url_for('edit_final_log', story_id= story['story_id'], mode = 'edit') }}" role="button"  class="btn btn-outline-info ">View & Edit</a>
+                </td>
+                <td>
+                  <a href = "{{ url_for('delete_final_log',tech = tech, table = 'tech_story_final', idcol = 'story_id', id = story['story_id'] )}}" role="button"  class="btn btn-danger ">Delete</a>
                 </td>
             </tr>
         </tbody>
         {% endfor %}
       </table>
     </div>
+
+    <hr></hr>
+    <a id = "add_new_final_story"></a>
+    <div class="container">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            {{ form.csrf_token }}
+            <div class="row" style = "margin-bottom: 15px; margin-top: 15px">
+
+                <div class="col-sm-12">
+                    <!-- <form method="POST" action=""> -->
+                        <div class="content-section">
+                          <div class = "row">
+
+                          <div class = "col-sm-3">
+
+                            <div class="form-group">
+                                    <b>{{ form.story_year.label(class="form-control-label") }}</b>
+
+                                    <p><small><font color="grey">YYYY</font></small></p>
+                                    {% if form.story_year.errors %}
+                                        {{ form.story_year(class="form-control form-control-lg is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.story_year.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.story_year(class="form-control form-control-lg") }}
+                                    {% endif %}
+
+
+                            </div>
+                          </div>
+                          <div class = "col-sm-3">
+
+                            <div class="form-group">
+                                    <b>{{ form.story_date.label(class="form-control-label") }}</b>
+                                    <p><small><font color="grey">MM/DD</font></small></p>
+
+                                    {% if form.story_date.errors %}
+                                        {{ form.story_date(class="form-control form-control-lg is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.story_date.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.story_date(class="form-control form-control-lg") }}
+                                    {% endif %}
+
+                            </div>
+                          </div>
+
+                          <div class = "col-sm-6">
+
+                            <div class="form-group">
+                                    <b>{{ form.milestone.label(class="form-control-label") }}</b>
+                                    <p><small><font color="grey">Is this a milestone story?</font></small></p>
+
+                                    {% if form.milestone.errors %}
+                                        {{ form.milestone(class="form-control form-control-lg is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.milestone.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.milestone(class="form-control form-control-lg") }}
+                                    {% endif %}
+
+                            </div>
+                          </div>
+                          </div>
+                            <div class="form-group">
+                                    <b>{{ form.story_content.label(class="form-control-label") }}</b>
+                                    <p><small><font color="grey">The content of the story.</font></small></p>
+                                    {% if form.story_content.errors %}
+                                        {{ form.story_content(class="form-control form-control-lg is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.story_content.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.story_content(class="form-control form-control-lg") }}
+                                    {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                    <b>{{ form.sources.label(class="form-control-label") }}</b>
+                                    <p><small><font color="grey">Use ";" to split multi sources, less than 3 sources preferred.</font></small></p>
+                                    {% if form.sources.errors %}
+                                        {{ form.sources(class="form-control form-control-lg is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.sources.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.sources(class="form-control form-control-lg") }}
+                                    {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                {{ form.submit(class="btn btn-outline-info") }}
+                            </div>
+
+                        </div>
+                      </form>
+                      </div>
+
+
+
+
+
+
   </div>
 
 
 
 </div>
+
+
+
 
 {% endblock content %}

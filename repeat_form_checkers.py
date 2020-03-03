@@ -79,3 +79,6 @@ def repeat_checker(form, table_name):
     existing = db.fetchone()
 
     return existing
+
+def repeat_final_story(form):
+    return False

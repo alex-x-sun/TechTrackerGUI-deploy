@@ -6,7 +6,23 @@
 {% endblock %}
 
 {% block content %}
+<div class = "row">
+  <div class = "col">
 
+    <h6>You are checking the stories of:</h6>
+    <h5> {{ tech }} </h5>
+  </div>
+
+
+  <div class = "col">
+    <div class="btn-group btn-group-sm pull-right mt-1" role="group">
+      <a href="{{ url_for('view_scout', log_id = log_id['log_id'], mode = 'edit') }}" target="_blank"  role="button"  class="btn   btn-outline-info  pull-right"><small>Check Scout</small></a>
+      <a href="{{ url_for('task_board_e') }}" role="button"  class="btn   btn-outline-info  pull-right"><small>Back to Taskboard</small></a>
+    </div>
+  </div>
+</div>
+
+<hr></hr>
 <div div class="table table-responsive-sm">
 
 
@@ -29,7 +45,7 @@
         <tbody>
 
 
-            <tr class="{% if story['change_committed']  %} table-success {% else %} table-light {% endif %}">
+            <tr class="{% if story['change_committed']  %} table-dark {% else %} table-light {% endif %}">
 
 
                 <td>{{ story['story_year'] }}</td>
@@ -39,15 +55,15 @@
                 <td>{{ story['contribute_time'] }}</td>
                 <td tyle="word-wrap: break-word; min-width: 300px;">
 
-                      <a href = "{{ url_for('view_log', log_s_id= story['log_s_id'], mode = 'edit') }}" role="button"  class="btn btn-outline-info pull-left">View & Edit</a>
+                      <a href = "{{ url_for('view_log', log_s_id= story['log_s_id'], mode = 'edit') }}" role="button"  class="btn btn-outline-info btn-sm pull-left">View & Edit</a>
 
                 </td>
 
                 <td tyle="word-wrap: break-word; min-width: 300px;">
-                  {% if user['final_editor'] == 1 %}
+                  {% if user['can_edit'] == 1 %}
 
-                    <a href = "{{ url_for('delete_log', table = 'tech_story_log', idcol = 'log_s_id', id = story['log_s_id']) }}" class = "pull-right" ><font color = "red" size = "2">DELETE</font></a>
-                
+                    <a href = "{{ url_for('delete_log', table = 'tech_story_log', idcol = 'log_s_id', id = story['log_s_id']) }}" class = "btn btn-outline-danger btn-sm pull-right" ><font color = "red" size = "2">DELETE</font></a>
+
                   {% endif %}
                 </td>
                 <!-- <td>
